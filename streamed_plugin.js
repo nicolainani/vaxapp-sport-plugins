@@ -10,7 +10,7 @@ function getManifest() {
   return JSON.stringify({
     id: "streamed",
     name: "Streamed",
-    version: "1.1.7",
+    version: "1.1.8",
     baseUrl: BASE_URL,
     iconUrl: "https://i.ibb.co/N2mkkD4N/streamed-logo.png",
     isEnabled: true,
@@ -142,7 +142,8 @@ function parseListResponse(html, apiUrl) {
     streams.forEach((stream) => {
       const title = stream?.title?.trim();
       const posterUrl = getPosterUrl(stream);
-      const dateTime = formatDateTime(stream?.date);
+      const dateTime =
+        Date.now() >= stream?.date ? "LIVE" : formatDateTime(stream?.date);
       const category = stream?.category?.toUpperCase() || "";
 
       stream.sources.forEach((item) => {

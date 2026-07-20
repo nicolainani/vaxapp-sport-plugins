@@ -7,7 +7,12 @@ const CATEGORY_MAP = {
   basketball: "Basketball",
   football: "Football",
   volleyball: "Volleyball",
-  channels: "24/7 Streams"
+  channels: "24/7 Streams",
+  "australian-football": "Australian Football",
+  "american-football": "American Football",
+  rugby: "rugby",
+  wrestling: "Wrestling",
+  darts: "Darts"
 };
 
 // =============================================================================
@@ -18,7 +23,7 @@ function getManifest() {
   return JSON.stringify({
     id: "ppv",
     name: "PPV",
-    version: "1.0.2",
+    version: "1.0.4",
     baseUrl: BASE_URL,
     iconUrl: "https://i.ibb.co/BHQSwhLX/ppv-logo.png",
     isEnabled: true,
@@ -60,17 +65,61 @@ https: function getHomeSections() {
       title: "24/7 Streams 📺",
       type: "Horizontal",
       path: ""
+    },
+    {
+      slug: "australian-football",
+      title: "Australian Football 🏈",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "american-football",
+      title: "American Football 🏈",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "rugby",
+      title: "Rugby 🏉",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "wrestling",
+      title: "Wrestling 🤼",
+      type: "Horizontal",
+      path: ""
+    },
+
+    {
+      slug: "darts",
+      title: "Darts 🎯",
+      type: "Horizontal",
+      path: ""
     }
+    // ,
+    // {
+    //   slug: "",
+    //   title: "",
+    //   type: "Horizontal",
+    //   path: ""
+    // },
   ]);
 }
 
 function getPrimaryCategories() {
   return JSON.stringify([
     { name: "Baseball", slug: "baseball" },
-    { name: "Football", slug: "basketball" },
+    { name: "Basketball", slug: "basketball" },
     { name: "Football", slug: "football" },
     { name: "Volleyball", slug: "volleyball" },
-    { name: "24/7 Streams", slug: "channels" }
+    { name: "24/7 Streams", slug: "channels" },
+    { name: "Australian Football", slug: "australian-football" },
+    { name: "American Football", slug: "american-football" },
+    { name: "Rugby", slug: "rugby" },
+    { name: "Wrestling", slug: "wrestling" },
+    { name: "Darts", slug: "darts" }
+    // { name: "", slug: "" },
   ]);
 }
 
@@ -284,7 +333,7 @@ function formatDateTime(timestamp) {
   const dd = String(date.getDate()).padStart(2, "0");
   const MM = String(date.getMonth() + 1).padStart(2, "0");
 
-  return `${hh}:${mm} - ${dd}/${MM}`;
+  return `${hh}:${mm}-${dd}/${MM}`;
 }
 
 function getStreamsByParam(apiUrl, param, streams) {
