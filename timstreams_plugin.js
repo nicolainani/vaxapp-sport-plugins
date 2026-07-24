@@ -9,8 +9,8 @@ const FALLBACK_POSTER_URL = "https://i.ibb.co/rKHf363x/fallback-thumbnail.webp";
 function getManifest() {
   return JSON.stringify({
     id: "timstreams",
-    name: "Timstreams",
-    version: "1.1.1",
+    name: "[sports] Timstreams",
+    version: "1.1.5",
     baseUrl: BASE_API_URL,
     iconUrl: "https://i.ibb.co/WN9gstLN/logo.png",
     isEnabled: true,
@@ -97,12 +97,12 @@ function parseListResponse(html, apiUrl) {
 
     // Lọc theo search keyword từ ?search= trong apiUrl
     const keyword = extractParamFromUrl(apiUrl, "search");
-    streams = filterByKeyword(streams, keyword);
+    streams = filterStreams(streams, keyword);
 
     streams.forEach((stream) => {
       const { url, name, logo, genre, time } = stream;
       const description = `Event "${name}" is hosted on server Timstreams.`;
-      const tRInfo = data?.genres?.[genre] || "REPLAY";
+      const streamLabel = data?.genres?.[genre] || "REPLAY";
       const path =
         (data?.events
           ? "/live-upcoming"
@@ -124,7 +124,7 @@ function parseListResponse(html, apiUrl) {
         posterUrl: logo || FALLBACK_POSTER_URL,
         backdropUrl: logo || FALLBACK_POSTER_URL,
         quality: tLInfo,
-        episode_current: tRInfo
+        episode_current: streamLabel
       });
     });
 
@@ -149,26 +149,27 @@ function parseMovieDetail(html, apiUrl) {
   const data = JSON.parse(html);
   const streams = data?.events || data?.replays || data?.channels;
 
-  if (!Array.isArray(streams) || streams?.length === 0)
-    return JSON.stringify({
-      id: "",
-      title: "⚠️ Link Not Found!",
-      posterUrl: FALLBACK_POSTER_URL,
-      backdropUrl: FALLBACK_POSTER_URL,
-      servers: []
-    });
-
   const slug = extractParamFromUrl(apiUrl, "slug");
-  const stream = findStreamBySlug(streams, slug);
-  const { url, name, logo, genre, time } = stream || {};
+  const stream = getStream(streams, slug) || {};
+
+  const { url, name, logo, genre, time } = stream;
   const type = genre && (data?.genres[genre] || data?.genres[genre]);
   const dateTime =
     data?.events && isLive(time) ? "LIVE" : formatDateTimeGMT7(time);
   const description = `Event "${name}" is hosted on server Timstreams`;
   const episodes = [];
 
-  stream?.streams?.forEach((item, index) => {
+  stream.streams?.forEach((item, index) => {
     let { name, url } = item;
+    if (!url)
+      return JSON.stringify({
+        id: "",
+        title: "⚠️ Stream Link Not Found!",
+        posterUrl: FALLBACK_POSTER_URL,
+        backdropUrl: FALLBACK_POSTER_URL,
+        servers: []
+      });
+
     name = data?.events || data?.replays ? name : `Link - ${index + 1}`;
     const slug = `${stream.url}-${index + 1}`;
 
@@ -197,7 +198,17 @@ function parseDetailResponse(html, sourceUrl) {
   return JSON.stringify({
     url: sourceUrl,
     headers: {
-      Referer: "https://logic.icelanders.st/"
+      Referer: sourceUrl,
+      Origin: sourceUrl,
+      "User-Agent":
+        "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+      "Sec-Ch-Ua":
+        '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+      "Sec-Ch-Ua-Mobile": "?1",
+      "Sec-Ch-Ua-Platform": '"Android"',
+      Accept: "*/*",
+      "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+      "X-Requested-With": "com.android.chrome"
     },
     isEmbed: false
   });
@@ -245,12 +256,11 @@ function extractParamFromUrl(url, param) {
   return match ? decodeURIComponent(match[1]) : "";
 }
 
-function findStreamBySlug(streams, slug) {
-  if (!Array.isArray(streams) || streams?.length === 0) return undefined;
+function getStream(streams, slug) {
   return streams.find((stream) => stream?.url === slug);
 }
 
-function filterByKeyword(streams, keyword) {
+function filterStreams(streams, keyword) {
   if (keyword) {
     streams = streams.filter(function (stream) {
       return stream?.name?.toLowerCase()?.indexOf(keyword.toLowerCase()) >= 0;
