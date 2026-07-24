@@ -18,7 +18,7 @@
     {
       "id": "ppv",
       "name": "[sports] PPV",
-      "version": "1.0.6",
+      "version": "1.0.8",
       "scriptUrl": "https://raw.githubusercontent.com/nicolainani/vaxapp-sport-plugins/refs/heads/main/ppv_plugin.js",
       "iconUrl": "https://i.ibb.co/BHQSwhLX/ppv-logo.png"
     }
