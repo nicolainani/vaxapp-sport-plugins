@@ -7,15 +7,20 @@ const CATEGORY_MAP = {
   football: "Football",
   volleyball: "Volleyball",
   motorsports: "Motorsports",
+  badminton: "Badminton",
+  golf: "Golf",
+  tennis: "Tennis",
   wrestling: "Wrestling",
   basketball: "Basketball",
   baseball: "Baseball",
+  hockey: "Hockey",
   "american-football": "American Football",
   "australian-football": "Australian Football",
-  rugby: "rugby",
+  rugby: "Rugby",
   darts: "Darts",
   miscellaneous: "Miscellaneous",
   channels: "24/7 Streams"
+  // ,: ""
 };
 
 // =============================================================================
@@ -26,7 +31,7 @@ function getManifest() {
   return JSON.stringify({
     id: "ppv",
     name: "[sports] PPV",
-    version: "1.0.6",
+    version: "1.0.8",
     baseUrl: BASE_URL,
     iconUrl: "https://i.ibb.co/BHQSwhLX/ppv-logo.png",
     isEnabled: true,
@@ -40,6 +45,12 @@ function getManifest() {
 https: function getHomeSections() {
   return JSON.stringify([
     {
+      slug: "live",
+      title: "🔴 LIVE",
+      type: "Horizontal",
+      path: ""
+    },
+    {
       slug: "combat-sports",
       title: "Combat Sports 💪",
       type: "Horizontal",
@@ -52,14 +63,33 @@ https: function getHomeSections() {
       path: ""
     },
     {
-      slug: "volleyball 🏐",
-      title: "Volleyball",
+      slug: "volleyball",
+      title: "Volleyball 🏐",
       type: "Horizontal",
       path: ""
     },
     {
       slug: "motorsports",
       title: "Motorsports 🏁",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "badminton",
+      title: "Badminton 🏸",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "golf",
+      title: "Golf 🚩",
+      type: "Horizontal",
+      path: ""
+    },
+
+    {
+      slug: "tennis",
+      title: "Tennis 🎾",
       type: "Horizontal",
       path: ""
     },
@@ -78,6 +108,12 @@ https: function getHomeSections() {
     {
       slug: "baseball",
       title: "Baseball ⚾",
+      type: "Horizontal",
+      path: ""
+    },
+    {
+      slug: "hockey",
+      title: "Hockey 🏒",
       type: "Horizontal",
       path: ""
     },
@@ -133,9 +169,13 @@ function getPrimaryCategories() {
     { name: "Football", slug: "football" },
     { name: "Volleyball", slug: "volleyball" },
     { name: "Motorsports", slug: "motorsports" },
+    { name: "Badminton", slug: "badminton" },
+    { name: "Golf", slug: "golf" },
+    { name: "Tennis", slug: "tennis" },
     { name: "Wrestling", slug: "wrestling" },
     { name: "Basketball", slug: "basketball" },
     { name: "Baseball", slug: "baseball" },
+    { name: "Hockey", slug: "hockey" },
     { name: "American Football", slug: "american-football" },
     { name: "Australian Football", slug: "australian-football" },
     { name: "Rugby", slug: "rugby" },
@@ -214,9 +254,11 @@ function parseListResponse(html, apiUrl) {
           ? "LIVE"
           : formatDateTime(stream.starts_at);
       const bottomLabel =
-        stream.locale.toUpperCase() +
+        stream.category_name.toUpperCase() +
         " - " +
-        stream.category_name.toUpperCase();
+        stream.tag +
+        " - " +
+        stream.locale.toUpperCase();
 
       items.push({
         id: id,
@@ -387,17 +429,34 @@ function getStream(streams, id) {
 }
 
 function filterStreams(streams, [filterKey, filterValue]) {
+  const result = [];
+
   // filter streams by category
-  if (filterValue && filterKey === "category")
+  if (filterValue && filterKey === "category") {
+    if (filterValue === "live") {
+      // live
+      streams.forEach((item) => {
+        item.streams.forEach((stream) => {
+          const isLive =
+            Number(stream.starts_at) <= Math.floor(Date.now() / 1000) &&
+            !stream.always_live;
+          if (isLive) result.push(stream);
+        });
+      });
+
+      result.sort((a, b) => parseInt(b.viewers) - parseInt(a.viewers));
+      return result;
+    }
+
+    // normal
     return (
       streams.find((item) => {
         return item.category === CATEGORY_MAP[filterValue];
       })?.streams || []
     );
-
+  }
   // filter streams by search
   if (filterValue && filterKey === "search") {
-    const result = [];
     streams.forEach((item) => {
       item.streams.forEach((stream) => {
         filterValue = filterValue.toLowerCase();
